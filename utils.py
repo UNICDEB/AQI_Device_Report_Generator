@@ -41,7 +41,18 @@ def process_excel(file_path):
 
     df=pd.read_excel(file_path,skiprows=7)
 
-    profile=ProfileReport(df,title=f"{device_id} Report",explorative=True)
+    profile = ProfileReport(
+    df,
+    title=f"{device_id} Report",
+    explorative=True,
+    correlations={
+        "pearson": {"calculate": False},
+        "spearman": {"calculate": False},
+        "kendall": {"calculate": False},
+        "phi_k": {"calculate": False},
+        "cramers": {"calculate": False}
+    }
+)
 
     ts=datetime.now().strftime("%Y%m%d_%H%M%S")
     html=os.path.join("results",f"{device_id}_{ts}.html")

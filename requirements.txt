@@ -1,0 +1,5 @@
+streamlit
+pandas
+openpyxl
+ydata-profiling
+streamlit-option-menu

@@ -371,96 +371,7 @@
 # )
 
 ##############################
-# ## Version 2.0
 
-
-import streamlit as st
-from utils import *
-from concurrent.futures import ThreadPoolExecutor
-import os, time
-
-st.set_page_config(page_title="Device Analytics Platform", layout="wide")
-
-init_folders()
-
-if "reports" not in st.session_state:
-    st.session_state.reports = {}
-if "logs" not in st.session_state:
-    st.session_state.logs = []
-
-theme = st.sidebar.selectbox("Theme", ["Light","Dark"])
-apply_theme(theme)
-
-st.title("📊 Device Analytics & Profiling Platform")
-
-upload_mode = st.sidebar.radio("Upload Mode", ["ZIP Upload","Excel Upload"])
-
-files_to_process = []
-
-if upload_mode=="ZIP Upload":
-    zip_file = st.file_uploader("Upload ZIP", type=["zip"])
-    if zip_file:
-        files_to_process = extract_zip_upload(zip_file)
-else:
-    uploaded = st.file_uploader("Upload Excel Files", type=["xlsx","xls"], accept_multiple_files=True)
-    if uploaded:
-        files_to_process = save_uploaded_files(uploaded)
-
-if st.button("🚀 Process"):
-    start=time.time()
-    progress=st.progress(0)
-
-    def worker(f):
-        return process_excel(f)
-
-    with ThreadPoolExecutor(max_workers=4) as ex:
-        results=list(ex.map(worker, files_to_process))
-
-    for i,r in enumerate(results):
-        st.session_state.reports[r["device_id"]] = r["html"]
-        st.session_state.logs.append(r)
-        progress.progress((i+1)/len(results))
-
-    create_archive()
-    # st.balloons()
-    st.success(f"Completed in {round(time.time()-start,2)} sec")
-
-c1,c2,c3,c4=st.columns(4)
-c1.metric("Devices", len(st.session_state.reports))
-c2.metric("Reports", len(st.session_state.reports))
-c3.metric("Logs", len(st.session_state.logs))
-c4.metric("Archive", "Ready" if os.path.exists("archive/results_archive.zip") else "No")
-
-if st.session_state.reports:
-    dev=st.selectbox("Select Device", list(st.session_state.reports.keys()))
-    html_path=st.session_state.reports[dev]
-
-    with open(html_path,"r",encoding="utf-8") as f:
-        html=f.read()
-
-    st.download_button("Download Report", html, file_name=os.path.basename(html_path))
-    st.components.v1.html(html,height=900,scrolling=True)
-
-if os.path.exists("archive/results_archive.zip"):
-    with open("archive/results_archive.zip","rb") as f:
-        st.download_button("📦 Download All Reports",f.read(),"results_archive.zip")
-
-if st.button("🗑 Clear Workspace"):
-    clear_workspace()
-    st.session_state.reports={}
-    st.session_state.logs=[]
-    st.rerun()
-
-st.markdown("---")
-st.markdown("### Processing Logs")
-if st.session_state.logs:
-    st.dataframe(st.session_state.logs,use_container_width=True)
-
-st.markdown("---")
-st.markdown("<center><b>Device Analytics & Profiling Platform</b><br>Engineered by Debabrata Doloi<br>© 2026 All Rights Reserved</center>", unsafe_allow_html=True)
-
-
-#######################
 # ## Version 3.0 - Refactored with utils.py
 # import os
 # import time
@@ -738,3 +649,382 @@ st.markdown("<center><b>Device Analytics & Profiling Platform</b><br>Engineered 
 #     """,
 #     unsafe_allow_html=True,
 # )
+
+
+############################################
+# # ## Version 2.0
+
+# ### If small file then this is the final code
+
+
+# import streamlit as st
+# from utils import *
+# from concurrent.futures import ThreadPoolExecutor
+# import os, time
+
+# st.set_page_config(page_title="Device Analytics Platform", layout="wide")
+
+# init_folders()
+
+# if "reports" not in st.session_state:
+#     st.session_state.reports = {}
+# if "logs" not in st.session_state:
+#     st.session_state.logs = []
+
+# theme = st.sidebar.selectbox("Theme", ["Light","Dark"])
+# apply_theme(theme)
+
+# st.title("📊 Device Analytics & Profiling Platform")
+
+# upload_mode = st.sidebar.radio("Upload Mode", ["ZIP Upload","Excel Upload"])
+
+# files_to_process = []
+
+# if upload_mode=="ZIP Upload":
+#     zip_file = st.file_uploader("Upload ZIP", type=["zip"])
+#     if zip_file:
+#         files_to_process = extract_zip_upload(zip_file)
+# else:
+#     uploaded = st.file_uploader("Upload Excel Files", type=["xlsx","xls"], accept_multiple_files=True)
+#     if uploaded:
+#         files_to_process = save_uploaded_files(uploaded)
+
+# if st.button("🚀 Process"):
+#     start=time.time()
+#     progress=st.progress(0)
+
+#     def worker(f):
+#         return process_excel(f)
+
+#     with ThreadPoolExecutor(max_workers=4) as ex:
+#         results=list(ex.map(worker, files_to_process))
+
+#     for i,r in enumerate(results):
+#         st.session_state.reports[r["device_id"]] = r["html"]
+#         st.session_state.logs.append(r)
+#         progress.progress((i+1)/len(results))
+
+#     create_archive()
+#     # st.balloons()
+#     st.success(f"Completed in {round(time.time()-start,2)} sec")
+
+# c1,c2,c3,c4=st.columns(4)
+# c1.metric("Devices", len(st.session_state.reports))
+# c2.metric("Reports", len(st.session_state.reports))
+# c3.metric("Logs", len(st.session_state.logs))
+# c4.metric("Archive", "Ready" if os.path.exists("archive/results_archive.zip") else "No")
+
+# if st.session_state.reports:
+#     dev=st.selectbox("Select Device", list(st.session_state.reports.keys()))
+#     html_path=st.session_state.reports[dev]
+
+#     with open(html_path,"r",encoding="utf-8") as f:
+#         html=f.read()
+
+#     st.download_button("Download Report", html, file_name=os.path.basename(html_path))
+#     st.components.v1.html(html,height=900,scrolling=True)
+
+# if os.path.exists("archive/results_archive.zip"):
+#     with open("archive/results_archive.zip","rb") as f:
+#         st.download_button("📦 Download All Reports",f.read(),"results_archive.zip")
+
+# if st.button("🗑 Clear Workspace"):
+#     clear_workspace()
+#     st.session_state.reports={}
+#     st.session_state.logs=[]
+#     st.rerun()
+
+# st.markdown("---")
+# st.markdown("### Processing Logs")
+# if st.session_state.logs:
+#     st.dataframe(st.session_state.logs,use_container_width=True)
+
+# st.markdown("---")
+# st.markdown("<center><b>Device Analytics & Profiling Platform</b><br>Engineered by Debabrata Doloi<br>© 2026 All Rights Reserved</center>", unsafe_allow_html=True)
+
+
+#######################
+
+## Version:04
+## Date: 18/06/2026
+import streamlit as st
+import os
+import time
+
+from utils import *
+
+st.set_page_config(
+    page_title="Device Analytics Platform",
+    layout="wide"
+)
+
+init_folders()
+
+if "reports" not in st.session_state:
+    st.session_state.reports = {}
+
+if "logs" not in st.session_state:
+    st.session_state.logs = []
+
+# ==========================================
+# SIDEBAR
+# ==========================================
+
+st.sidebar.title("⚙️ Settings")
+
+theme = st.sidebar.selectbox(
+    "Theme",
+    ["Light", "Dark"]
+)
+
+apply_theme(theme)
+
+upload_mode = st.sidebar.radio(
+    "Upload Mode",
+    ["ZIP Upload", "Excel Upload"]
+)
+
+if st.sidebar.button("🗑 Clear Workspace"):
+
+    clear_workspace()
+
+    st.session_state.reports = {}
+    st.session_state.logs = []
+
+    st.rerun()
+
+# ==========================================
+# HEADER
+# ==========================================
+
+st.title(
+    "📊 Device Analytics & Profiling Platform"
+)
+
+st.markdown(
+    "Generate automated profiling reports for AQI devices."
+)
+
+# ==========================================
+# FILE UPLOAD
+# ==========================================
+
+files_to_process = []
+
+if upload_mode == "ZIP Upload":
+
+    zip_file = st.file_uploader(
+        "Upload ZIP File",
+        type=["zip"]
+    )
+
+    if zip_file:
+
+        files_to_process = extract_zip_upload(
+            zip_file
+        )
+
+        st.success(
+            f"{len(files_to_process)} files found."
+        )
+
+else:
+
+    uploaded_files = st.file_uploader(
+        "Upload Excel Files",
+        type=["xlsx", "xls"],
+        accept_multiple_files=True
+    )
+
+    if uploaded_files:
+
+        files_to_process = save_uploaded_files(
+            uploaded_files
+        )
+
+        st.success(
+            f"{len(files_to_process)} files uploaded."
+        )
+
+# ==========================================
+# PROCESS
+# ==========================================
+
+if st.button("🚀 Process Reports"):
+
+    if len(files_to_process) == 0:
+
+        st.warning(
+            "Please upload files first."
+        )
+
+    else:
+
+        start_time = time.time()
+
+        progress = st.progress(0)
+
+        status_box = st.empty()
+
+        total_files = len(
+            files_to_process
+        )
+
+        for i, file in enumerate(
+            files_to_process
+        ):
+
+            status_box.info(
+                f"Processing {i+1}/{total_files}\n\n{os.path.basename(file)}"
+            )
+
+            result = process_excel(file)
+
+            st.session_state.logs.append(
+                result
+            )
+
+            if result["status"] == "Success":
+
+                st.session_state.reports[
+                    result["device_id"]
+                ] = result["html"]
+
+            progress.progress(
+                (i + 1) / total_files
+            )
+
+        create_archive()
+
+        elapsed = round(
+            time.time() - start_time,
+            2
+        )
+
+        status_box.success(
+            f"Completed in {elapsed} seconds"
+        )
+
+# ==========================================
+# DASHBOARD
+# ==========================================
+
+st.markdown("---")
+
+c1, c2, c3, c4 = st.columns(4)
+
+c1.metric(
+    "Devices",
+    len(st.session_state.reports)
+)
+
+c2.metric(
+    "Reports",
+    len(st.session_state.reports)
+)
+
+c3.metric(
+    "Logs",
+    len(st.session_state.logs)
+)
+
+c4.metric(
+    "Archive",
+    "Ready"
+    if os.path.exists(
+        "archive/results_archive.zip"
+    )
+    else "No"
+)
+
+# ==========================================
+# REPORT VIEWER
+# ==========================================
+
+if st.session_state.reports:
+
+    st.markdown("---")
+
+    selected_device = st.selectbox(
+        "Select Device",
+        list(
+            st.session_state.reports.keys()
+        )
+    )
+
+    report_path = st.session_state.reports[
+        selected_device
+    ]
+
+    with open(
+        report_path,
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        html_content = f.read()
+
+    st.download_button(
+        "⬇ Download Report",
+        html_content,
+        file_name=os.path.basename(
+            report_path
+        )
+    )
+
+    st.components.v1.html(
+        html_content,
+        height=900,
+        scrolling=True
+    )
+
+# ==========================================
+# DOWNLOAD ARCHIVE
+# ==========================================
+
+if os.path.exists(
+    "archive/results_archive.zip"
+):
+
+    with open(
+        "archive/results_archive.zip",
+        "rb"
+    ) as f:
+
+        st.download_button(
+            "📦 Download All Reports",
+            f.read(),
+            file_name="results_archive.zip"
+        )
+
+# ==========================================
+# LOGS
+# ==========================================
+
+st.markdown("---")
+st.subheader("Processing Logs")
+
+if st.session_state.logs:
+
+    st.dataframe(
+        st.session_state.logs,
+        use_container_width=True
+    )
+
+# ==========================================
+# FOOTER
+# ==========================================
+
+st.markdown("---")
+
+st.markdown(
+    """
+    <center>
+        <b>Device Analytics & Profiling Platform</b><br>
+        Engineered by Debabrata Doloi<br>
+        © 2026 All Rights Reserved
+    </center>
+    """,
+    unsafe_allow_html=True
+)
+

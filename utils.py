@@ -159,7 +159,7 @@ def process_excel(file_path):
     }
 
 def create_archive():
-    archive="archive/results_archive.zip"
+    archive="results/archive/results_archive.zip"
     with zipfile.ZipFile(archive,"w") as z:
         for f in os.listdir("results"):
             z.write(os.path.join("results",f),f)
